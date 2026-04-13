@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="EFCore.NamingConventions" />
     <PackageReference Include="MassTransit.RabbitMQ" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
@@ -18,4 +19,5 @@
   <ItemGroup>
     <ProjectReference Include="..\..\shared\Axon.Contracts\Axon.Contracts.csproj" />
   </ItemGroup>
+
 </Project>

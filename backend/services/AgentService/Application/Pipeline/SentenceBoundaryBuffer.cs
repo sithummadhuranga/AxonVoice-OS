@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using System.Text;
 
 namespace AgentService.Application.Pipeline;
 
@@ -49,7 +50,7 @@ public sealed partial class SentenceBoundaryBuffer
         var lastMatchEnd = 0;
         foreach (Match match in matches)
         {
-            var sentence = current[lastMatchEnd..match.Index + match.Length].Trim();
+            var sentence = current[lastMatchEnd..(match.Index + match.Length)].Trim();
             lastMatchEnd = match.Index + match.Length;
 
             if (!string.IsNullOrWhiteSpace(sentence))

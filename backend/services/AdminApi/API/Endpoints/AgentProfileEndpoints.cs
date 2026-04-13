@@ -69,27 +69,20 @@ public static class AgentProfileEndpoints
 
     private static async Task<IResult> CreateProfileAsync(
         CreateProfileRequest request,
-        AdminDbContext db,
+        MediatR.ISender sender,
         CancellationToken ct)
     {
-        if (string.IsNullOrWhiteSpace(request.AgentName))
-            return Results.ValidationProblem(new Dictionary<string, string[]>
-            {
-                [nameof(request.AgentName)] = ["AgentName is required."]
-            });
+        var command = new AdminApi.Application.Commands.CreateAgentProfileCommand(
+            request.TenantId,
+            request.AgentName,
+            request.PurposeId,
+            request.WebhookUrl,
+            request.WebhookAuthToken);
 
-        var profile = new AgentProfile
-        {
-            TenantId = request.TenantId,
-            AgentName = request.AgentName,
-            PurposeId = request.PurposeId
-        };
-
-        db.AgentProfiles.Add(profile);
-        await db.SaveChangesAsync(ct);
+        var result = await sender.Send(command, ct);
 
         return Results.CreatedAtRoute("GetAgentProfileById",
-            new { profileId = profile.ProfileId }, profile);
+            new { profileId = result.ProfileId }, result);
     }
 
     private static async Task<IResult> UpdateProfileAsync(
@@ -129,7 +122,9 @@ public static class AgentProfileEndpoints
     private sealed record CreateProfileRequest(
         Guid TenantId,
         string AgentName,
-        Purposes PurposeId);
+        Purposes PurposeId,
+        string? WebhookUrl,
+        string? WebhookAuthToken);
 
     private sealed record UpdateProfileRequest(
         string AgentName,

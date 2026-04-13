@@ -15,13 +15,15 @@ COPY backend/services/OutboxWorker/  backend/services/OutboxWorker/
 COPY backend/shared/Axon.Contracts/  backend/shared/Axon.Contracts/
 
 WORKDIR /src/backend/services/OutboxWorker
-RUN dotnet publish OutboxWorker.csproj -c Release -o /app/publish /p:UseAppHost=false --no-restore
+RUN dotnet publish OutboxWorker.csproj -c Release -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
 COPY --from=build /app/publish .
 
-RUN addgroup --system axon && adduser --system --ingroup axon axon
+RUN groupadd --system axon && useradd --system --gid axon axon
 USER axon
 
 ENTRYPOINT ["dotnet", "OutboxWorker.dll"]
+
+

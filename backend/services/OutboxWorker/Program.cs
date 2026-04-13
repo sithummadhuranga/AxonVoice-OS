@@ -1,7 +1,6 @@
-using AdminApi.Domain.Entities;
-using AdminApi.Infrastructure.Persistence;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
+using OutboxWorker.Persistence;
 using Serilog;
 using System.Text.Json;
 
@@ -11,32 +10,27 @@ var builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddSerilog((_, cfg) =>
     cfg.ReadFrom.Configuration(builder.Configuration)
        .Enrich.FromLogContext()
-       .WriteTo.Console());
+       .WriteTo.Console(outputTemplate:
+           "[{Timestamp:HH:mm:ss} {Level:u3}] [{SourceContext}] {Message:lj}{NewLine}{Exception}"));
 
-// ── Database ──────────────────────────────────────────────────────────────────
+// ── Database (OutboxWorker-owned DbContext) ───────────────────────────────────
 var connectionString = builder.Configuration.GetConnectionString("Postgres")
     ?? throw new InvalidOperationException("ConnectionStrings:Postgres not configured");
 
-builder.Services.AddDbContext<AdminDbContext>(opts =>
+builder.Services.AddDbContext<OutboxDbContext>(opts =>
     opts.UseNpgsql(connectionString)
         .UseSnakeCaseNamingConvention());
 
 // ── MassTransit / RabbitMQ ────────────────────────────────────────────────────
+var rabbitMqUri = builder.Configuration.GetConnectionString("RabbitMQ")
+    ?? throw new InvalidOperationException("ConnectionStrings:RabbitMQ not configured");
+
 builder.Services.AddMassTransit(mt =>
 {
     mt.UsingRabbitMq((ctx, cfg) =>
     {
-        cfg.Host(
-            builder.Configuration["RabbitMQ:Host"] ?? "rabbitmq",
-            ushort.Parse(builder.Configuration["RabbitMQ:Port"] ?? "5672"),
-            "/",
-            h =>
-            {
-                h.Username(builder.Configuration["RabbitMQ:User"]
-                    ?? throw new InvalidOperationException("RabbitMQ:User not configured"));
-                h.Password(builder.Configuration["RabbitMQ:Password"]
-                    ?? throw new InvalidOperationException("RabbitMQ:Password not configured"));
-            });
+        cfg.Host(new Uri(rabbitMqUri));
+        cfg.ConfigureEndpoints(ctx);
     });
 });
 
@@ -48,7 +42,6 @@ await host.RunAsync();
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Outbox Publisher — polls DB, publishes events, marks as processed
-// Located in same file as Program.cs for simplicity of this background worker
 // ─────────────────────────────────────────────────────────────────────────────
 
 internal sealed class OutboxPublisherWorker : BackgroundService
@@ -65,8 +58,8 @@ internal sealed class OutboxPublisherWorker : BackgroundService
         IConfiguration config)
     {
         _scopeFactory = scopeFactory ?? throw new ArgumentNullException(nameof(scopeFactory));
-        _publisher = publisher ?? throw new ArgumentNullException(nameof(publisher));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _publisher    = publisher    ?? throw new ArgumentNullException(nameof(publisher));
+        _logger       = logger       ?? throw new ArgumentNullException(nameof(logger));
 
         var intervalSeconds = int.Parse(config["Outbox:PollIntervalSeconds"] ?? "5");
         _pollInterval = TimeSpan.FromSeconds(intervalSeconds);
@@ -99,11 +92,10 @@ internal sealed class OutboxPublisherWorker : BackgroundService
     private async Task ProcessBatchAsync(CancellationToken ct)
     {
         using var scope = _scopeFactory.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<AdminDbContext>();
+        var db = scope.ServiceProvider.GetRequiredService<OutboxDbContext>();
 
-        var batchSize = 50;
+        const int batchSize = 50;
 
-        // Query unprocessed messages ordered by creation time (FIFO)
         var messages = await db.OutboxMessages
             .Where(m => m.ProcessedAtUtc == null)
             .OrderBy(m => m.CreatedAtUtc)
@@ -136,7 +128,6 @@ internal sealed class OutboxPublisherWorker : BackgroundService
 
     private async Task PublishMessageAsync(OutboxMessage message, CancellationToken ct)
     {
-        // Deserialize to the correct CLR type and publish via MassTransit topology
         var eventType = Type.GetType(message.EventType)
             ?? throw new InvalidOperationException(
                 $"Cannot resolve CLR type for event: {message.EventType}");

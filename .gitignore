@@ -17,6 +17,9 @@ docs/
 .env
 .env.local
 .env.*.local
+appsettings.Development.json
+appsettings.Production.json
+appsettings.Staging.json
 # .env.example IS committed — it is the secrets template
 *.pfx
 *.p12

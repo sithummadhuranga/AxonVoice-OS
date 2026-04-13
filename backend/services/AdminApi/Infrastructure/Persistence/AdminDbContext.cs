@@ -17,10 +17,19 @@ public sealed class AdminDbContext : DbContext
     public DbSet<AgentProfile> AgentProfiles => Set<AgentProfile>();
     public DbSet<AgentPurpose> AgentPurposes => Set<AgentPurpose>();
     public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
+    public DbSet<TenantKnowledgeBase> TenantKnowledgeBases => Set<TenantKnowledgeBase>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        // pgvector extension must live in 'public' (Postgres requirement)
+        modelBuilder.HasPostgresExtension("vector");
+
+        // All application tables live under the 'axon' schema (not public).
+        // EF migrations history table stays in 'public' — that is controlled
+        // by MigrationsHistoryTable() on the Npgsql options, not here.
+        modelBuilder.HasDefaultSchema("axon");
 
         // ── AgentPurpose ─────────────────────────────────────────────────────
         modelBuilder.Entity<AgentPurpose>(b =>
@@ -29,8 +38,6 @@ public sealed class AdminDbContext : DbContext
             b.Property(p => p.PurposeId).HasConversion<int>();
             b.Property(p => p.Name).HasMaxLength(100).IsRequired();
             b.Property(p => p.BaseSystemPrompt).HasMaxLength(8000).IsRequired();
-            b.Property(p => p.WebhookUrl).HasMaxLength(2048);
-            b.Property(p => p.WebhookAuthTokenEncrypted).HasMaxLength(512);
 
             // Seed built-in purposes
             b.HasData(
@@ -71,6 +78,8 @@ public sealed class AdminDbContext : DbContext
             b.HasIndex(p => p.TenantId);
             b.Property(p => p.PurposeId).HasConversion<int>();
             b.Property(p => p.AgentName).HasMaxLength(150).IsRequired();
+            b.Property(p => p.WebhookUrl).HasMaxLength(2048);
+            b.Property(p => p.WebhookAuthTokenEncrypted).HasMaxLength(512);
 
             b.HasOne(p => p.Purpose)
              .WithMany(pu => pu.Profiles)
@@ -86,6 +95,20 @@ public sealed class AdminDbContext : DbContext
             b.Property(o => o.EventType).HasMaxLength(256).IsRequired();
             b.Property(o => o.Topic).HasMaxLength(256).IsRequired();
             b.Property(o => o.Payload).IsRequired();
+        });
+
+        // ── TenantKnowledgeBase ───────────────────────────────────────────────
+        modelBuilder.Entity<TenantKnowledgeBase>(b =>
+        {
+            b.HasKey(k => k.Id);
+            b.HasIndex(k => k.ProfileId);
+            b.Property(k => k.TextChunk).IsRequired();
+            b.Property(k => k.Embedding).HasColumnType("vector(384)");
+            
+            // HNSW index for vector cosine similarity search
+            b.HasIndex(k => k.Embedding)
+             .HasMethod("hnsw")
+             .HasOperators("vector_cosine_ops");
         });
     }
 }
