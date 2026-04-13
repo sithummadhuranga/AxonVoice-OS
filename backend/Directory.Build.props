@@ -1,0 +1,35 @@
+<Project>
+  <!--
+    AxonVoice OS — Global MSBuild Properties
+    Scope: All .NET projects under backend/ (services/ + shared/)
+    MSBuild discovers this by walking up from each .csproj directory.
+    Do NOT set project-specific properties here.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningLevel>9999</WarningLevel>
+    <LangVersion>latest</LangVersion>
+
+    <!-- Assembly Metadata -->
+    <Company>AxonVoice</Company>
+    <Product>AxonVoice OS</Product>
+    <Copyright>Copyright © 2026 AxonVoice. All rights reserved.</Copyright>
+    <Version>1.0.0</Version>
+
+    <!-- Central Package Management — versions defined in Directory.Packages.props -->
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+
+    <!-- Deterministic builds for CI reproducibility -->
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+
+  <!-- Repo-wide implicit using directives for all .NET projects -->
+  <ItemGroup>
+    <Using Include="System.Threading" />
+    <Using Include="Microsoft.Extensions.Logging" />
+  </ItemGroup>
+</Project>

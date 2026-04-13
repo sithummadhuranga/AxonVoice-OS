@@ -1,0 +1,73 @@
+<Project>
+  <!--
+    AxonVoice OS — Central Package Management (CPM)
+    Scope: All NuGet packages for backend .NET projects.
+    Individual .csproj files use <PackageReference Include="Name" /> WITHOUT Version.
+    All versions are locked here — single source of truth to prevent drift.
+  -->
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- ═══════ ASP.NET CORE / HOSTING ════════════════════════════════════ -->
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.OpenApi"                  Version="10.0.5" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting"                  Version="10.0.5" />
+
+    <!-- ═══════ ENTITY FRAMEWORK CORE ════════════════════════════════════ -->
+    <PackageVersion Include="Microsoft.EntityFrameworkCore"          Version="9.0.4" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design"   Version="9.0.4">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageVersion>
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.4" />
+
+    <!-- Npgsql PostgreSQL provider -->
+    <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+
+    <!-- pgvector Code-First support -->
+    <PackageVersion Include="Pgvector"                    Version="0.3.0" />
+    <PackageVersion Include="Pgvector.EntityFrameworkCore" Version="0.3.0" />
+
+    <!-- ═══════ YARP REVERSE PROXY ════════════════════════════════════════ -->
+    <PackageVersion Include="Yarp.ReverseProxy" Version="2.2.0" />
+
+    <!-- ═══════ MICROSOFT SEMANTIC KERNEL ════════════════════════════════ -->
+    <!-- The main package includes Ollama + Google connectors via builder extensions -->
+    <!-- Separate connector packages are alpha-only — not used in production scaffold -->
+    <PackageVersion Include="Microsoft.SemanticKernel"             Version="1.74.0" />
+
+    <!-- ═══════ MASSTRANSIT / RABBITMQ ════════════════════════════════════ -->
+    <PackageVersion Include="MassTransit"           Version="8.3.6" />
+    <PackageVersion Include="MassTransit.RabbitMQ"  Version="8.3.6" />
+
+    <!-- ═══════ REDIS ══════════════════════════════════════════════════════ -->
+    <PackageVersion Include="StackExchange.Redis"                          Version="2.8.16" />
+    <PackageVersion Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="9.0.4" />
+
+    <!-- ═══════ RESILIENCE — POLLY (Built-in .NET 9+) ════════════════════ -->
+    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="9.4.0" />
+
+    <!-- ═══════ CQRS — MEDIATR ════════════════════════════════════════════ -->
+    <PackageVersion Include="MediatR" Version="12.4.1" />
+
+    <!-- ═══════ VALIDATION ════════════════════════════════════════════════ -->
+    <PackageVersion Include="FluentValidation"                              Version="11.11.0" />
+    <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="11.11.0" />
+
+    <!-- ═══════ STRUCTURED LOGGING — SERILOG ═════════════════════════════ -->
+    <PackageVersion Include="Serilog.AspNetCore"           Version="8.0.3" />
+    <PackageVersion Include="Serilog.Sinks.Console"        Version="6.0.0" />
+    <PackageVersion Include="Serilog.Enrichers.Environment" Version="3.0.1" />
+    <PackageVersion Include="Serilog.Enrichers.Thread"     Version="4.0.0" />
+
+    <!-- ═══════ HEALTH CHECKS ═════════════════════════════════════════════ -->
+    <PackageVersion Include="AspNetCore.HealthChecks.NpgSql"   Version="9.0.0" />
+    <PackageVersion Include="AspNetCore.HealthChecks.Redis"    Version="9.0.0" />
+    <PackageVersion Include="AspNetCore.HealthChecks.RabbitMQ" Version="9.0.0" />
+
+    <!-- ═══════ OPEN API ══════════════════════════════════════════════════ -->
+    <PackageVersion Include="Scalar.AspNetCore" Version="2.4.11" />
+  </ItemGroup>
+</Project>
