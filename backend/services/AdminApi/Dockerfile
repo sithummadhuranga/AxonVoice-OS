@@ -16,13 +16,15 @@ COPY backend/services/AdminApi/   backend/services/AdminApi/
 COPY backend/shared/Axon.Contracts/ backend/shared/Axon.Contracts/
 
 WORKDIR /src/backend/services/AdminApi
-RUN dotnet publish AdminApi.csproj -c Release -o /app/publish /p:UseAppHost=false --no-restore
+RUN dotnet publish AdminApi.csproj -c Release -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
 COPY --from=build /app/publish .
 
-RUN addgroup --system axon && adduser --system --ingroup axon axon
+RUN groupadd --system axon && useradd --system --gid axon axon
 USER axon
 
 ENTRYPOINT ["dotnet", "AdminApi.dll"]
+
+

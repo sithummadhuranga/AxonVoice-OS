@@ -16,7 +16,7 @@ COPY backend/services/Orchestrator/  backend/services/Orchestrator/
 COPY backend/shared/Axon.Contracts/  backend/shared/Axon.Contracts/
 
 WORKDIR /src/backend/services/Orchestrator
-RUN dotnet publish Orchestrator.csproj -c Release -o /app/publish /p:UseAppHost=false --no-restore
+RUN dotnet publish Orchestrator.csproj -c Release -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
@@ -25,7 +25,9 @@ COPY --from=build /app/publish .
 # Audio filler files mounted at runtime via volume — do not bake into image
 RUN mkdir -p /app/audio
 
-RUN addgroup --system axon && adduser --system --ingroup axon axon
+RUN groupadd --system axon && useradd --system --gid axon axon
 USER axon
 
 ENTRYPOINT ["dotnet", "Orchestrator.dll"]
+
+

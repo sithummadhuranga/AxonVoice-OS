@@ -1,4 +1,5 @@
 using Serilog;
+using Microsoft.AspNetCore.RateLimiting;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // AxonVoice OS — API Gateway (YARP)
@@ -78,12 +79,7 @@ builder.Services
         builder.Configuration["ConnectionStrings:Redis"]
         ?? throw new InvalidOperationException("ConnectionStrings:Redis not configured"),
         name: "redis",
-        tags: ["cache"])
-    .AddRabbitMQ(
-        rabbitConnectionString: builder.Configuration["ConnectionStrings:RabbitMQ"]
-        ?? throw new InvalidOperationException("ConnectionStrings:RabbitMQ not configured"),
-        name: "rabbitmq",
-        tags: ["messaging"]);
+        tags: ["cache"]);
 
 // ── CORS ─────────────────────────────────────────────────────────────────────
 var allowedOrigin = builder.Configuration["Cors:AllowedOrigin"]

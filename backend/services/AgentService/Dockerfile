@@ -16,13 +16,15 @@ COPY backend/services/AgentService/  backend/services/AgentService/
 COPY backend/shared/Axon.Contracts/  backend/shared/Axon.Contracts/
 
 WORKDIR /src/backend/services/AgentService
-RUN dotnet publish AgentService.csproj -c Release -o /app/publish /p:UseAppHost=false --no-restore
+RUN dotnet publish AgentService.csproj -c Release -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
 COPY --from=build /app/publish .
 
-RUN addgroup --system axon && adduser --system --ingroup axon axon
+RUN groupadd --system axon && useradd --system --gid axon axon
 USER axon
 
 ENTRYPOINT ["dotnet", "AgentService.dll"]
+
+

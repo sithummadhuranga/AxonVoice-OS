@@ -13,5 +13,7 @@ public sealed record AgentProfileDto(
     Guid TenantId,
     string AgentName,
     Purposes PurposeId,
-    bool IsActive
+    string? WebhookUrl,
+    bool IsActive,
+    DateTimeOffset CreatedAtUtc
 );

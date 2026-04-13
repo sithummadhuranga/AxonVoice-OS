@@ -30,6 +30,5 @@
   <!-- Repo-wide implicit using directives for all .NET projects -->
   <ItemGroup>
     <Using Include="System.Threading" />
-    <Using Include="Microsoft.Extensions.Logging" />
   </ItemGroup>
 </Project>

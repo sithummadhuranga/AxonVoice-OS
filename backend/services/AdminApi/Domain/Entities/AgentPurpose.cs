@@ -12,18 +12,6 @@ public sealed class AgentPurpose
     public required string Name { get; set; }
     public required string BaseSystemPrompt { get; set; }
 
-    /// <summary>
-    /// Optional webhook URL for custom integrations.
-    /// Null for built-in purposes (OrderTaking, Booking, GeneralFaq).
-    /// </summary>
-    public string? WebhookUrl { get; set; }
-
-    /// <summary>
-    /// AES-256 encrypted auth token for the webhook.
-    /// Stored encrypted at rest — decrypted in-memory by AgentService only.
-    /// </summary>
-    public string? WebhookAuthTokenEncrypted { get; set; }
-
     public DateTimeOffset CreatedAtUtc { get; init; } = DateTimeOffset.UtcNow;
 
     // Navigation

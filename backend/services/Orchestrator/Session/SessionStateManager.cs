@@ -73,7 +73,7 @@ public sealed class SessionStateManager
         var db = _redis.GetDatabase();
         var value = await db.HashGetAsync(BuildKey(sessionId), "Language");
 
-        return value.HasValue && int.TryParse(value, out var intVal)
+        return value.HasValue && int.TryParse((string?)value, out var intVal)
             ? (Language)intVal
             : Language.Unknown;
     }
