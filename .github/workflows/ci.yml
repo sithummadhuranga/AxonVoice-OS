@@ -83,4 +83,4 @@ jobs:
 
       - name: Verify Docker Compose Build
         # This confirms that all 5 Dockerfiles assemble cleanly and layer correctly
-        run: docker-compose --profile services build
+        run: docker compose --profile services build
